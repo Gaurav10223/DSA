@@ -1,0 +1,45 @@
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+bool check(long long x, const vector<int>& composition, const vector<int>& stock, const vector<int>& cost, int budget) {
+    long long totalCost = 0;
+    for (int i = 0; i < composition.size(); i++) {
+        long long needed = (long long)composition[i] * x;
+        if (needed <= stock[i]) {
+            continue;
+        }
+        long long deficit = needed - stock[i];
+        long long add = (long long)deficit * cost[i];
+        if (add > (long long)budget - totalCost) {
+            totalCost = (long long)budget + 1;
+            break;
+        }
+        totalCost += add;
+    }
+    return totalCost <= budget;
+}
+
+int findMaximumAlloyUnits(vector<int> composition, vector<int> stock, vector<int> cost, int budget) {
+    int n = composition.size();
+    long long high_bound = LLONG_MAX;
+    for (int i = 0; i < n; i++) {
+        long long q_i = (long long)budget / cost[i];
+        long long total_available = (long long)stock[i] + q_i;
+        long long candidate_i = total_available / composition[i];
+        if (candidate_i < high_bound) {
+            high_bound = candidate_i;
+        }
+    }
+    long long low = 0, high = high_bound + 1;
+    while (low < high) {
+        long long mid = low + (high - low) / 2;
+        if (check(mid, composition, stock, cost, budget)) {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
+    }
+    return (int)(low - 1);
+}
